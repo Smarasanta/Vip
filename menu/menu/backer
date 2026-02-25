@@ -1,0 +1,169 @@
+#!/bin/bash
+# My Telegram : https://t.me/newbielearning
+# ==========================================
+# Color
+RED='\033[0;31m'
+NC='\033[0m'
+GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+LIGHT='\033[0;37m'
+# ==========================================
+ipsaya=$(curl -sS ipv4.icanhazip.com)
+data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
+date_list=$(date +"%Y-%m-%d" -d "$data_server")
+data_ip="https://raw.githubusercontent.com/smarasanta/izin/main/ip"
+checking_sc() {
+  useexp=$(wget -qO- $data_ip | grep $ipsaya | awk '{print $3}')
+
+  if [[ "$useexp" == "Lifetime" ]]; then
+    # Jika useexp adalah "Lifetime", anggap tetap aktif
+
+    return
+  fi
+  date_list_epoch=$(date -d "$date_list" +%s)
+  useexp_epoch=$(date -d "$useexp" +%s 2>/dev/null)
+
+  if [[ $? -ne 0 || $date_list_epoch -gt $useexp_epoch ]]; then
+    # Tanggal sekarang lebih besar dari tanggal expired, atau format salah
+echo -e "\033[1;93m────────────────────────────────────────────\033[0m"
+echo -e "\033[41;1m ⚠️       AKSES DI TOLAK         ⚠️ \033[0m"
+echo -e "\033[1;93m────────────────────────────────────────────\033[0m"
+exit 1
+  fi
+}
+checking_sc
+CHATID=$(grep -E "^#bot# " "/etc/bot/.bot.db" | cut -d ' ' -f 3)
+KEY=$(grep -E "^#bot# " "/etc/bot/.bot.db" | cut -d ' ' -f 2)
+export TIME="10"
+export URL="https://api.telegram.org/bot$KEY/sendMessage"
+clear
+IP=$(curl -sS ipv4.icanhazip.com)
+domain=$(cat /etc/xray/domain)
+date=$(date +"%Y-%m-%d")
+clear
+IP=$(curl -sS ipv4.icanhazip.com)
+domain=$(cat /etc/xray/domain)
+date=$(date +"%Y-%m-%d")
+clear
+echo -e "\033[1;97m Mohon Menunggu , Proses Backup sedang berlangsung !! \033[0m "
+rm -rf /root/backup
+mkdir /root/backup
+cp /etc/passwd backup/
+cp /etc/group backup/
+cp /etc/shadow backup/
+cp /etc/gshadow backup/
+cp /etc/crontab backup/
+cp /etc/vmess/.vmess.db backup/
+cp /etc/ssh/.ssh.db backup/ 
+cp /etc/vless/.vless.db backup/
+cp /etc/trojan/.trojan.db backup/
+cp /etc/bot/.bot.db backup/
+cp -r /etc/kyt/limit backup/
+cp -r /etc/limit backup/qt/
+cp -r /etc/vmess backup/
+cp -r /etc/trojan backup/
+cp -r /etc/vless backup/
+cp -r /var/lib/kyt/ backup/kyt 
+cp -r /etc/xray backup/xray
+cp -r /var/www/html/ backup/html
+backup_pass=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 6)
+cd /root
+7z a -tzip -p"$backup_pass" "$IP.zip" backup > /dev/null 2>&1
+7z a -tzip -p"$backup_pass" "$IP-$date.zip" backup > /dev/null 2>&1
+backup_file="/root/$IP-$date.zip"    # Nama file backup
+remote_path="dr:backup/$IP-$date.zip" # Path tujuan di rclone
+max_retry=3  # Jumlah maksimal percobaan
+upload_backup() {
+    local attempt=1
+
+    while [[ $attempt -le $max_retry ]]; do
+        echo "Percobaan Membuat File Backup ke-$attempt..."
+        
+        # Upload file dengan rclone
+        rclone copy "$backup_file" "dr:backup/"
+
+
+        # Ambil URL share link
+        url=$(rclone link "$remote_path")
+
+        # Ambil ID dari URL
+        id=$(echo "$url" | grep '^https' | cut -d'=' -f2)
+
+        if [[ -n "$id" ]]; then
+		echo "$backup_pass" > /root/$id.txt
+            echo "File Backup Berhasil Dibuat"
+            return 0
+        fi
+
+        echo "Gagal Membuat Backup, mencoba ulang dalam 5 detik..."
+        sleep 5
+        ((attempt++))
+    done
+
+    echo "Backup gagal Dibuat setelah $max_retry percobaan!"
+	rm -r backup $IP.zip $IP-$date.zip
+	echo "$0" | at now + 5 minutes
+    echo "Backup akan dicoba kembali dalam 5 menit."
+    exit 1
+}
+upload_backup
+pass_backup="/root/$id.txt"
+upload_pass() {
+    local attempt=1
+
+    while [[ $attempt -le $max_retry ]]; do
+        echo "Menyiapkan Password ke-$attempt..."
+		rclone copy "$pass_backup" "pa:pass/"
+		sleep 1
+        if [[ $(rclone ls pa:pass/ | grep -c $id.txt) -gt 0 ]]; then
+            echo "Password Backup Berhasil Dibuat"
+            return 0
+        fi
+
+        echo "Gagal Membuat Password, mencoba ulang dalam 5 detik..."
+        sleep 5
+        ((attempt++))
+    done
+
+    echo "Gagal Membuat Password setelah $max_retry percobaan!"
+	rm -r backup $IP.zip $IP-$date.zip $id.txt
+	echo "$0" | at now + 5 minutes
+    echo "Backup akan dicoba kembali dalam 5 menit."
+    exit 1
+}
+upload_pass
+rm $id.txt
+#link="https://drive.google.com/u/4/uc?id=${id}&export=download"
+rm -rf /root/backup
+rm -r /root/$IP-$date.zip
+clear
+curl -F chat_id="$CHATID" -F document=@"$IP.zip" -F caption="◇━━━━━━━━━━━━━━◇
+   ⚠️BACKUP NOTIF⚠️
+     Detail Backup VPS
+◇━━━━━━━━━━━━━━◇
+IP VPS  : ${IP} 
+DOMAIN  : ${domain}
+Tanggal : $date
+Pass    : $backup_pass
+◇━━━━━━━━━━━━━━◇
+Id Backup   : $id
+◇━━━━━━━━━━━━━━◇
+Silahkan copy Link dan restore di VPS baru
+BY BOT : @Sabdopalonstore" https://api.telegram.org/bot$KEY/sendDocument &> /dev/null
+echo ""
+rm -r /root/$IP.zip
+clear
+echo -e "
+Detail Backup 
+==================================
+IP VPS        : $IP
+Link Backup   : $id
+Tanggal       : $date
+Pass          : $backup_pass
+==================================
+"
+echo "Silahkan copy Link dan restore di VPS baru"
+echo ""

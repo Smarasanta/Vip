@@ -1,0 +1,282 @@
+#!/bin/bash
+Green="\e[92;1m"
+RED="\033[31m"
+YELLOW="\033[33m"
+BLUE="\033[36m"
+FONT="\033[0m"
+GREENBG="\033[42;37m"
+NS=$( cat /etc/xray/dns )
+PUB=$( cat /etc/slowdns/server.pub )
+REDBG="\033[41;37m"
+OK="${Green}--->${FONT}"
+ERROR="${RED}[ERROR]${FONT}"
+GRAY="\e[1;30m"
+NC='\e[0m'
+red='\e[1;31m'
+green='\e[0;32m'
+DF='\e[39m'
+Bold='\e[1m'
+Blink='\e[5m'
+yell='\e[33m'
+red='\e[31m'
+green='\e[32m'
+blue='\e[34m'
+PURPLE='\e[35m'
+cyan='\e[36m'
+Lred='\e[91m'
+Lgreen='\e[92m'
+Lyellow='\e[93m'
+NC='\e[0m'
+GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+LIGHT='\033[0;37m'
+grenbo="\e[92;1m"
+red() { echo -e "\\033[32;1m${*}\\033[0m"; }
+# Getting
+CHATID=$(grep -E "^#bot# " "/etc/bot/.bot.db" | cut -d ' ' -f 3)
+KEY=$(grep -E "^#bot# " "/etc/bot/.bot.db" | cut -d ' ' -f 2)
+export TIME="10"
+export URL="https://api.telegram.org/bot$KEY/sendMessage"
+clear
+#IZIN SCRIPT
+MYIP=$(cat /usr/bin/.ipvps)
+echo -e "\e[32mloading...\e[0m"
+clear
+# Valid Script
+ipsaya=$(cat /usr/bin/.ipvps)
+data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
+date_list=$(date +"%Y-%m-%d" -d "$data_server")
+data_ip="https://raw.githubusercontent.com/Smarasanta/izin/main/ip"
+checking_sc() {
+  useexp=$(wget -qO- $data_ip | grep -wE $ipsaya | awk '{print $3}')
+  if [[ $date_list < $useexp ]]; then
+    echo -ne
+  else
+    echo -e "\033[1;93m────────────────────────────────────────────\033[0m"
+    echo -e "\033[42m          404 NOT FOUND AUTOSCRIPT          \033[0m"
+    echo -e "\033[1;93m────────────────────────────────────────────\033[0m"
+    echo -e ""
+    echo -e "            ${RED}PERMISSION DENIED !${NC}"
+    echo -e "   \033[0;33mYour VPS${NC} $ipsaya \033[0;33mHas been Banned${NC}"
+    echo -e "     \033[0;33mBuy access permissions for scripts${NC}"
+    echo -e "             \033[0;33mContact Admin :${NC}"
+    echo -e "      \033[0;36mTelegram${NC} t.me/Sabdopalonstore"
+    echo -e "      ${GREEN}WhatsApp${NC} wa.me/6285161256106"
+    echo -e "\033[1;93m────────────────────────────────────────────\033[0m"
+    sleep 5
+    reboot
+  fi
+}
+checking_sc
+echo -e "\e[32mloading...\e[0m"
+clear
+source /var/lib/kyt/ipvps.conf
+if [[ "$IP" = "" ]]; then
+domain=$(cat /etc/xray/domain)
+else
+domain=$IP
+fi
+
+#tls="$(cat ~/log-install.txt | grep -w "Vmess TLS" | cut -d: -f2|sed 's/ //g')"
+#none="$(cat ~/log-install.txt | grep -w "Vmess None TLS" | cut -d: -f2|sed 's/ //g')"
+until [[ $user =~ ^[a-zA-Z0-9_]+$ && ${CLIENT_EXISTS} == '0' ]]; do
+    echo -e "\e[38;5;99m◇━━━━━━━━━━━━━━━━━◇\033[0m"
+    echo -e "\033[1;97m CREATE VMESS ACCOUNT \033[0m"
+    echo -e "\e[38;5;99m◇━━━━━━━━━━━━━━━━━◇\033[0m"
+	echo -e "\033[1;97m"
+    read -rp "User: " -e user
+    CLIENT_EXISTS=$(grep -w $user /etc/xray/config.json | wc -l)
+	echo -e "\033[0m"
+    if [[ ${CLIENT_EXISTS} == '1' ]]; then
+        clear
+        echo -e "\e[38;5;99m◇━━━━━━━━━━━━━━━━━◇\033[0m"
+        echo -e "\033[1;97m CREATE VMESS ACCOUNT \033[0m"
+        echo -e "\e[38;5;99m◇━━━━━━━━━━━━━━━━━◇\033[0m"
+        echo ""
+        echo "A client with the specified name was already created, please choose another name."
+        echo ""
+        echo -e "\e[38;5;99m◇━━━━━━━━━━━━━━━━━◇\033[0m"
+        read -n 1 -s -r -p "Press any key to back on menu"
+        menu
+    fi
+done
+
+ISP=$(cat /etc/xray/isp)
+CITY=$(cat /etc/xray/city)
+uuid=$(cat /proc/sys/kernel/random/uuid)
+echo -e "\033[1;97m"
+read -p "Expired (days): " masaaktif
+read -p "Limit User (GB): " Quota
+read -p "Limit User (IP): " iplimit
+echo -e "\033[0m"
+tgl=$(date -d "$masaaktif days" +"%d")
+bln=$(date -d "$masaaktif days" +"%b")
+thn=$(date -d "$masaaktif days" +"%Y")
+expe="$tgl $bln, $thn"
+tgl2=$(date +"%d")
+bln2=$(date +"%b")
+thn2=$(date +"%Y")
+tnggl="$tgl2 $bln2, $thn2"
+exp=`date -d "$masaaktif days" +"%Y-%m-%d"`
+sed -i '/#vmess$/a\### '"$user $exp"'\
+},{"id": "'""$uuid""'","alterId": '"0"',"email": "'""$user""'"' /etc/xray/config.json
+exp=`date -d "$masaaktif days" +"%Y-%m-%d"`
+sed -i '/#vmessgrpc$/a\### '"$user $exp"'\
+},{"id": "'""$uuid""'","alterId": '"0"',"email": "'""$user""'"' /etc/xray/config.json
+
+asu=`cat<<EOF
+      {
+      "v": "2",
+      "ps": "${user}",
+      "add": "${domain}",
+      "port": "443",
+      "id": "${uuid}",
+      "aid": "0",
+      "net": "ws",
+      "path": "/vmess",
+      "type": "none",
+      "host": "${domain}",
+      "tls": "tls"
+}
+EOF`
+ask=`cat<<EOF
+      {
+      "v": "2",
+      "ps": "${user}",
+      "add": "${domain}",
+      "port": "80",
+      "id": "${uuid}",
+      "aid": "0",
+      "net": "ws",
+      "path": "/vmess",
+      "type": "none",
+      "host": "${domain}",
+      "tls": "none"
+}
+EOF`
+grpc=`cat<<EOF
+      {
+      "v": "2",
+      "ps": "${user}",
+      "add": "${domain}",
+      "port": "443",
+      "id": "${uuid}",
+      "aid": "0",
+      "net": "grpc",
+      "path": "vmess-grpc",
+      "type": "none",
+      "host": "${domain}",
+      "tls": "tls"
+}
+EOF`
+vmess_base641=$( base64 -w 0 <<< $vmess_json1)
+vmess_base642=$( base64 -w 0 <<< $vmess_json2)
+vmess_base643=$( base64 -w 0 <<< $vmess_json3)
+vmesslink1="vmess://$(echo $asu | base64 -w 0)"
+vmesslink2="vmess://$(echo $ask | base64 -w 0)"
+vmesslink3="vmess://$(echo $grpc | base64 -w 0)"
+systemctl restart xray > /dev/null 2>&1
+service cron restart > /dev/null 2>&1
+if [ ! -e /etc/vmess ]; then
+  mkdir -p /etc/vmess
+fi
+
+if [[ $iplimit -gt 0 ]]; then
+echo -e "$iplimit" > /etc/kyt/limit/vmess/ip/$user
+else
+echo > /dev/null
+fi
+
+if [ -z ${Quota} ]; then
+  Quota="0"
+fi
+
+c=$(echo "${Quota}" | sed 's/[^0-9]*//g')
+d=$((${c} * 1024 * 1024 * 1024))
+
+if [[ ${c} != "0" ]]; then
+  echo "${d}" > /etc/vmess/${user}
+fi
+DATADB=$(cat /etc/vmess/.vmess.db | grep "^###" | grep -w "${user}" | awk '{print $2}')
+if [[ "${DATADB}" != '' ]]; then
+  sed -i "/\b${user}\b/d" /etc/vmess/.vmess.db
+  echo "### ${user} ${exp} ${uuid} ${Quota} ${iplimit}" >>/etc/vmess/.vmess.db
+else
+echo "### ${user} ${exp} ${uuid} ${Quota} ${iplimit}" >>/etc/vmess/.vmess.db
+fi
+clear
+CHATID="$CHATID"
+KEY="$KEY"
+TIME="$TIME"
+URL="$URL"
+TEXT="<code>◇━━━━━━━━━━━━━━━━━◇</code>
+<code>      XRAY/VMESS</code>
+<code>◇━━━━━━━━━━━━━━━━━◇</code>
+<code>Remarks   : ${user}
+Domain    : ${domain}
+Limit Quota : ${Quota} GB
+Port TLS  : 400-900
+Port NTLS : 80, 8080, 8081-9999
+id        : ${uuid}
+alterId   : 0
+Security  : auto
+network   : ws or grpc
+Path      : /Multi-Path
+Dynamic   : https://bugmu.com/path
+Name      : vmess-grpc</code>
+<code>◇━━━━━━━━━━━━━━━━━◇</code>
+<code> VMESS WS TLS</code>
+<code>◇━━━━━━━━━━━━━━━━━◇</code>
+<code>${vmesslink1}</code>
+<code>◇━━━━━━━━━━━━━━━━━◇</code>
+<code>VMESS WS NO TLS</code>
+<code>◇━━━━━━━━━━━━━━━━━◇</code>
+<code>${vmesslink2}</code>
+<code>◇━━━━━━━━━━━━━━━━━◇</code>
+<code> VMESS gRPC</code>
+<code>◇━━━━━━━━━━━━━━━━━◇</code>
+<code>${vmesslink3}</code>
+<code>◇━━━━━━━━━━━━━━━━━◇</code>
+Info Script    : https://${domain}:81/
+<code>◇━━━━━━━━━━━━━━━━━◇</code>
+Aktif Selama   : $masaaktif Hari
+Dibuat Pada    : $tnggl
+Berakhir Pada  : $expe
+<code>◇━━━━━━━━━━━━━━━━━◇</code>
+"
+
+curl -s --max-time $TIME -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT&parse_mode=html" $URL >/dev/null
+clear
+clear
+echo -e "\e[38;5;99m◇━━━━━━━━━━━━━━━━━◇\033[0m"
+echo -e "\033[1;97m Xray/Vmess Account \033[0m"
+echo -e "\e[38;5;99m◇━━━━━━━━━━━━━━━━━◇\033[0m"
+echo -e "\033[1;97mRemarks         : ${user}\033[0m"
+echo -e "\033[1;97mDomain          : ${domain}\033[0m"
+echo -e "\033[1;97mUser Quota      : ${Quota} GB\033[0m"
+echo -e "\033[1;97mUser IP         : ${iplimit} IP\033[0m"
+echo -e "\033[1;97mPort TLS        : 400-900\033[0m"
+echo -e "\033[1;97mPort none TLS   : 80, 8080, 8081-9999\033[0m"
+echo -e "\033[1;97mID              : ${uuid}\033[0m"
+echo -e "\033[1;97mXray DNS        : ${NS}\033[0m"
+echo -e "\033[1;97mPubkey          : ${PUB}\033[0m"
+echo -e "\033[1;97mAlterId         : 0\033[0m"
+echo -e "\033[1;97mSecurity        : auto\033[0m"
+echo -e "\033[1;97mNetwork         : ws\033[0m"
+echo -e "\033[1;97mPath            : /Multi-Path\033[0m"
+echo -e "\033[1;97mDynamic Path    : https://bugmu.com/path\033[0m"
+echo -e "\033[1;97mServiceName     : vmess-grpc\033[0m"
+echo -e "\e[38;5;99m◇━━━━━━━━━━━━━━━━━◇\033[0m"
+echo -e "\033[1;97mLink TLS        : ${vmesslink1}\033[0m"
+echo -e "\e[38;5;99m◇━━━━━━━━━━━━━━━━━◇\033[0m"
+echo -e "\033[1;97mLink none TLS   : ${vmesslink2}\033[0m"
+echo -e "\e[38;5;99m◇━━━━━━━━━━━━━━━━━◇\033[0m"
+echo -e "\033[1;97mLink GRPC       : ${vmesslink3}\033[0m"
+echo -e "\e[38;5;99m◇━━━━━━━━━━━━━━━━━◇\033[0m"
+echo -e "\033[1;97mInfo Script     : https://${domain}:81/\033[0m"
+echo -e "\e[38;5;99m◇━━━━━━━━━━━━━━━━━◇\033[0m"
+echo -e "\033[1;97mAktif Selama    : $masaaktif Hari\033[0m"
+echo -e "\033[1;97mDibuat Pada     : $tnggl\033[0m"
+echo -e "\033[1;97mBerakhir Pada   : $expe\033[0m"
+echo -e "\e[38;5;99m◇━━━━━━━━━━━━━━━━━◇\033[0m"
+echo ""

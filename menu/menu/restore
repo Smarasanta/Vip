@@ -1,0 +1,173 @@
+#!/bin/bash
+# ==========================================
+# Color
+RED='\033[0;31m'
+NC='\033[0m'
+GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+LIGHT='\033[0;37m'
+ipsaya=$(curl -sS ipv4.icanhazip.com)
+data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
+date_list=$(date +"%Y-%m-%d" -d "$data_server")
+data_ip="https://raw.githubusercontent.com/smarasanta/izin/main/ip"
+checking_sc() {
+  useexp=$(wget -qO- $data_ip | grep $ipsaya | awk '{print $3}')
+
+  if [[ "$useexp" == "Lifetime" ]]; then
+    # Jika useexp adalah "Lifetime", anggap tetap aktif
+
+    return
+  fi
+  date_list_epoch=$(date -d "$date_list" +%s)
+  useexp_epoch=$(date -d "$useexp" +%s 2>/dev/null)
+
+  if [[ $? -ne 0 || $date_list_epoch -gt $useexp_epoch ]]; then
+    # Tanggal sekarang lebih besar dari tanggal expired, atau format salah
+echo -e "\033[1;93m────────────────────────────────────────────\033[0m"
+echo -e "\033[41;1m ⚠️       AKSES DI TOLAK         ⚠️ \033[0m"
+echo -e "\033[1;93m────────────────────────────────────────────\033[0m"
+exit 1
+  fi
+}
+checking_sc
+rm -r /root/backup*
+CHATID=$(grep -E "^#bot# " "/etc/bot/.bot.db" | cut -d ' ' -f 3)
+KEY=$(grep -E "^#bot# " "/etc/bot/.bot.db" | cut -d ' ' -f 2)
+export TIME="10"
+export URL="https://api.telegram.org/bot$KEY/sendMessage"
+clear
+function notif_restore() {
+    sleep 2
+    CHATID="$CHATID"
+KEY="$KEY"
+TIME="$TIME"
+URL="$URL"
+TEXT="
+<code>◇━━━━━━━━━━━━━━◇</code>
+<b>  ⚠️ RESTORE NOTIF⚠️</b>
+<b>     Detail Restore VPS</b>
+<code>◇━━━━━━━━━━━━━━◇</code>
+<code>Restore Vps Done</code>
+<code>◇━━━━━━━━━━━━━━◇</code>
+"
+
+curl -s --max-time $TIME -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT&parse_mode=html" $URL >/dev/null
+}
+# ==========================================
+# Getting
+clear
+echo "Silahkan Masukkan Link Backupnya"
+read -rp "ID File       : " -e id
+if [[ $(ls /var/lib/dpkg/ | grep -c "lock") -gt 0 ]]; then
+	rm /var/lib/dpkg/lock* &> /dev/null
+	rm /var/lib/dpkg/stato* &> /dev/null
+fi
+if ! command -v gdown &> /dev/null; then
+    if grep -Ei 'ubuntu 24|linux 12' /etc/os-release &> /dev/null; then
+        apt install -y python3-pip &> /dev/null
+		pip install --break-system-packages gdown
+    else
+        apt install -y python3-pip &> /dev/null
+        pip install gdown
+    fi
+else
+    echo "Proses Mengunduh File Backup"
+fi
+gdown --id "$id" -O backup.zip &> /dev/null
+
+function ambil_pass {
+    clear
+    while true; do
+        read -rp "Password Backup (ketik 'exit' untuk kembali): " -e pw
+        if [[ "$pw" == "exit" ]]; then
+            echo "Kembali ke menu..."
+            rm -rf backup*
+            exit 1
+            break
+        fi
+        if 7z x -p"$pw" backup.zip &>/dev/null; then
+            echo "Restore Dimulai!"
+	return
+        fi
+
+        echo "Ekstraksi gagal! Harap masukkan password yang benar."
+        echo "Jika lupa password, harap hubungi owner: https://sabdo.palon.cloud"
+    done
+}
+
+if ! rclone copy re:pass/$id.txt /root/ &>/dev/null; then
+    echo "Gagal mengunduh password dari Google Drive, tekan enter untuk melanjutkan!!"
+	rm -r backup
+    if 7z x backup.zip &>/dev/null; then
+        echo "Restore Dimulai!"
+    else
+        echo "Ekstraksi tanpa password gagal, meminta input manual..."
+		rm -r backup
+        ambil_pass  # Jika gagal, panggil fungsi pass
+    fi
+else
+    # Jika file berhasil diunduh, coba gunakan password dari file
+    pw=$(cat /root/$id.txt)
+    if 7z x -p"$pw" backup.zip &>/dev/null; then
+        echo "Restore Dimulai!"
+    else
+        echo "Ekstraksi dengan password dari file gagal, meminta input manual..."
+		rm -r backup
+        ambil_pass  # Jika gagal, panggil fungsi pass
+    fi
+fi
+
+
+rm -f backup.zip
+sleep 1
+cd /root/backup || exit
+
+# Fungsi untuk menyalin file jika ada dan menumpuk jika sudah ada
+copy_if_exists() {
+    src=$1
+    dest=$2
+    if [ -e "$src" ]; then
+        cp -rf "$src" "$dest"
+    fi
+}
+
+# Copy individual files
+copy_if_exists "passwd" "/etc/"
+copy_if_exists "group" "/etc/"
+copy_if_exists "shadow" "/etc/"
+copy_if_exists "gshadow" "/etc/"
+copy_if_exists ".bot.db" "/etc/bot/"
+copy_if_exists "crontab" "/etc/"
+copy_if_exists ".ssh.db" "/etc/ssh/"
+copy_if_exists ".vmess.db" "/etc/vmess/"
+copy_if_exists ".vless.db" "/etc/vless/"
+copy_if_exists ".trojan.db" "/etc/trojan/"
+
+# Copy directories recursively if they exist
+copy_if_exists "kyt" "/var/lib/"
+copy_if_exists "xray" "/etc/"
+copy_if_exists "html" "/var/www/"
+copy_if_exists "limit" "/etc/kyt/"
+copy_if_exists "vmess" "/etc/"
+copy_if_exists "trojan" "/etc/"
+copy_if_exists "vless" "/etc/"
+
+# Copy qt contents to /etc/limit if qt directory exists
+if [ -d "qt" ]; then
+    cp -rf qt/* /etc/limit
+fi
+
+# Menjalankan notifikasi restore jika tersedia
+if command -v notif_restore &> /dev/null; then
+    notif_restore
+fi
+
+# Hapus folder backup setelah proses selesai
+rm -rf /root/backup
+rm /root/$id.txt
+echo "Restore completed"
+systemctl restart xray ws dropbear haproxy nginx
+menu
